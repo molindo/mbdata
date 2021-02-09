@@ -15,6 +15,8 @@ import shutil
 import subprocess
 from typing import List
 from six.moves import configparser as ConfigParser
+import datetime
+import json
 if six.PY3:
     from contextlib import ExitStack
 else:
@@ -262,17 +264,18 @@ class ReplicationHook(object):
         self.cfg = cfg
         self.db = db
         self.schema = schema
-        self.logging = cfg.has_option('LOGGING', 'directory')
+        self.logging = cfg.has_option('logging', 'directory')
 
         if self.logging:
             time = datetime.datetime.today().strftime('%Y-%m-%d-%H%M%S')
-            directory = cfg.get('LOGGING', 'directory')
+            directory = cfg.get('logging', 'directory')
             self.logfile = '%s/mbslave-%s.log' % (directory,time)
             self.logtmp = self.logfile + '.tmp'
 
     def begin(self, seq):
-        self.log = open(self.logtmp, 'w')
-        print 'Logging to %s' % self.logfile
+        if self.logging:
+            self.log = open(self.logtmp, 'w')
+            logger.info("Logging to %s", self.logfile)
 
     def before_commit(self):
         pass
